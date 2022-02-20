@@ -37,8 +37,36 @@ all(
 
 # Solve for guaranteed squares --------------------------------------------
 valid
-apply(valid, 2, function(a) length(unique(a))==1)
-unique(valid[, apply(valid, 2, function(a) length(unique(a))==1)])
+eq0 <- apply(valid, 2, function(a) length(unique(a))==0) # all equal to 0?
+eq1 <- apply(valid, 2, function(a) length(unique(a))==1) # all equal to 1?
+empty <- rep(NA, 10)
+
+for(i in 1:10) {
+  if(eq0[i]) {
+    empty[i] <- 0
+  } else if(eq1[i]) {
+    empty[i] <- 1
+  }
+}
+
+empty
+
+valid[apply(valid, 1, function(x) return(all(x == empty, na.rm = TRUE))),]
+
+# Package into function ---------------------------------------------------
+permutation_solver <- function(pattern, permutation_patterns) {
+  matches <- unlist(lapply(patterns, function(x) {
+    if (length(x) == length(pattern)) {
+      all(x == pattern)
+    } else
+      FALSE
+  }))
+
+  perms[matches, , drop = FALSE]
+}
+
+# ... and test it
+permutation_solver(pattern = pattern, permutation_patterns = patterns)
 
 ## general approach:
 # calculate valid for every pattern in the nonogram
