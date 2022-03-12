@@ -55,7 +55,7 @@ valid[apply(valid, 1, function(x) return(all(x == empty, na.rm = TRUE))),]
 
 # Package into function ---------------------------------------------------
 permutation_solver <- function(pattern, permutation_patterns) {
-  matches <- unlist(lapply(patterns, function(x) {
+  matches <- unlist(lapply(permutation_patterns, function(x) {
     if (length(x) == length(pattern)) {
       all(x == pattern)
     } else
