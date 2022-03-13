@@ -1,3 +1,18 @@
+make_full_perm_set <- function(length) {
+  gtools::permutations(2, length, c(0, 1), repeats = TRUE)
+}
+
+permutation_solver <- function(pattern, permutation_patterns) {
+  matches <- unlist(lapply(permutation_patterns, function(x) {
+    if (length(x) == length(pattern)) {
+      all(x == pattern)
+    } else
+      FALSE
+  }))
+  
+  perms[matches, , drop = FALSE]
+}
+
 nonogram <- function(rows, columns) {
   if(!is.list(rows)) 
     stop("rows must be a list.")
@@ -41,7 +56,16 @@ dim.nonogram <- function(x) {
   c(x$nrows, x$ncolumns)
 }
 
-solve.nonogram <- function(nonogram, row_permutations, column_permutations, verbose = TRUE, max_iter = 100) {
+solve.nonogram <- function(nonogram, row_permutations = NULL, column_permutations = NULL, verbose = TRUE, max_iter = 100) {
+  if(is.null(row_permutations) | is.null(column_permutations)) {
+    cat(format(Sys.time(), usetz = TRUE), ": Generating initial possible permutations\n")
+    if(nonogram$nrows == nonogram$ncolumns) {
+      row_permutations <- column_permutations <- make_full_perm_set(nonogram$ncolumns)
+    } else {
+      column_permutations <- make_full_perm_set(nonogram$ncolumns)
+      row_permutations <- make_full_perm_set(nonogram$nrows)
+    }
+  }
   
   if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Run length encoding all initial possible permuations\n")
   row_patterns <- apply(row_permutations, 1, function(x){
@@ -64,7 +88,7 @@ solve.nonogram <- function(nonogram, row_permutations, column_permutations, verb
   
   if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Creating empty lists of search vectors\n")
   rows_known <- rep(list(rep(NA, nonogram$ncolumns)), nonogram$nrows)
-  columns_known <- rep(list(rep(NA, 10)), 10)
+  columns_known <- rep(list(rep(NA, nonogram$nrows)), nonogram$ncolumns)
   
   if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Eliminating non-viable permutations\n")
   
@@ -77,8 +101,7 @@ solve.nonogram <- function(nonogram, row_permutations, column_permutations, verb
     
     iter <- iter + 1
     
-    if(iter > max_iter) {
-      # break
+    if(iter > max_iter) {                        
       stop("Maximum iterations reached.")
     }
     
@@ -163,7 +186,7 @@ solve.nonogram <- function(nonogram, row_permutations, column_permutations, verb
 
 # Extract solution to df --------------------------------------------------
 as.data.frame.nonogram <- function(nonogram, with_solution = TRUE) {
-  if(!nonogram$solved) stop("This nonogram has not been solved.")
+  if(!nonogram$solved & with_solution) stop("This nonogram has not been solved.")
   
   if(with_solution) {
     data.frame(
@@ -184,7 +207,7 @@ as.data.frame.nonogram <- function(nonogram, with_solution = TRUE) {
 plot.nonogram <- function(nonogram, with_solution = TRUE) {
   if(!nonogram$solved & with_solution) stop("This nonogram has not been solved.")
   
-  solution_df <- as.data.frame(nonogram, with_solution)
+  solution_df <- as.data.frame(nonogram, with_solution = with_solution)
   
   p <- ggplot(solution_df, aes(column, row, fill = value)) +
     geom_tile() +
@@ -194,7 +217,11 @@ plot.nonogram <- function(nonogram, with_solution = TRUE) {
     geom_vline(xintercept = seq(1, length(solution_df[, 1]), 1) + 0.5, size = 0.1, col = "grey") +
     geom_hline(yintercept = seq(1, length(solution_df[, 1]), 1) + 0.5, size = 0.1, col = "grey") +
     theme_bw() +
-    theme(legend.position = "none", axis.title = element_blank())
+    theme(
+      legend.position = "none", 
+      axis.title = element_blank(), 
+      plot.background = element_rect(fill = "transparent", color = NA)
+    )
   
   column_grob <- lapply(nonogram$columns, function(x) {c(rep("", max(lengths(nonogram$columns)) - length(x)), x)}) |> 
     unlist() |> 
