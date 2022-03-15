@@ -279,40 +279,7 @@ examples <- list(
     columns = list(
       c(1, 1), c(1, 2),  c(8, 3),  c(7, 2, 3),  c(1, 2, 1, 2),  c(4, 1, 1, 1),  c(5, 2, 1),  c(5, 2, 1),  c(5, 2, 1),  c(5, 2, 1, 1), c(5, 1, 1, 2), c(9), c(1, 4), c(1, 2), c(2)
     )
-  ),
-  nonogram(
-    rows = list(
-      c(), c(), c(), c(), c(), c(), c(),  c(),  c(),  c(), c(), c(), c(), c(), c()
-    ),
-    columns = list(
-      c(), c(),  c(),  c(),  c(),  c(),  c(),  c(),  c(),  c(), c(), c(), c(), c(), c()
-    )
-  ),
-  nonogram(
-    rows = list(
-      c(), c(), c(), c(), c(), c(), c(),  c(),  c(),  c(), c(), c(), c(), c(), c()
-    ),
-    columns = list(
-      c(), c(),  c(),  c(),  c(),  c(),  c(),  c(),  c(),  c(), c(), c(), c(), c(), c()
-    )
-  ),
-  nonogram(
-    rows = list(
-      c(), c(), c(), c(), c(), c(), c(),  c(),  c(),  c(), c(), c(), c(), c(), c()
-    ),
-    columns = list(
-      c(), c(),  c(),  c(),  c(),  c(),  c(),  c(),  c(),  c(), c(), c(), c(), c(), c()
-    )
-  ),nonogram(
-    rows = list(
-      c(), c(), c(), c(), c(), c(), c(),  c(),  c(),  c(), c(), c(), c(), c(), c()
-    ),
-    columns = list(
-      c(), c(),  c(),  c(),  c(),  c(),  c(),  c(),  c(),  c(), c(), c(), c(), c(), c()
-    )
-  ),
+  )
 )
-
-
 
 usethis::use_data(examples, overwrite = TRUE)
