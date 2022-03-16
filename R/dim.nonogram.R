@@ -1,12 +1,12 @@
 #' dim.nonogram
 #'
 #' @description Returns the dimensions of a nonogram object.
-#' @param nonogram 
+#' @param nonogram An object of class nonogram.
 #'
-#' @return
+#' @return Vector of length 2.
 #' @export
 #'
 #' @examples
 dim.nonogram <- function(nonogram) {
-  c(nonogram$nrows, nonogram$ncolumns)
+  nonogram$dims
 }

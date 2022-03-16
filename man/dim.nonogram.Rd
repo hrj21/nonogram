@@ -7,10 +7,10 @@
 \method{dim}{nonogram}(nonogram)
 }
 \arguments{
-\item{nonogram}{}
+\item{nonogram}{An object of class nonogram.}
 }
 \value{
-
+Vector of length 2.
 }
 \description{
 Returns the dimensions of a nonogram object.

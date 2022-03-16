@@ -11,7 +11,8 @@
 }
 \description{
 Simply prints the dimensions of the nonogram and whether it has
-been solved. If the nonogram contains a solution matrix, this is also printed.
+been solved. If the nonogram has been solved, the solution matrix is also
+printed.
 }
 \examples{
 f <- nonogram(

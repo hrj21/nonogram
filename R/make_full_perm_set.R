@@ -1,12 +1,12 @@
 #' make_full_perm_set
 #'
-#' @description Given a length, l, `make_full_perm_set` finds all permutations of
-#'     length l whose elements can be 0 and 1.
+#' @description Given a length n, `make_full_perm_set` finds all permutations of
+#'     length n whose elements can be 0 and 1.
 #'     
-#' @param length The length of each permutation
+#' @param length The length of each permutation.
 #'
-#' @return Returns a matrix with l columns, where each row corresponds to a
-#'    different permutation of 0s and 1s
+#' @return Returns a matrix with n columns, where each row corresponds to a
+#'    different permutation of 0s and 1s.
 #' @export
 #'
 #' @examples

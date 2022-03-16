@@ -7,13 +7,25 @@
 \method{as.data.frame}{nonogram}(nonogram, with_solution = TRUE)
 }
 \arguments{
-\item{nonogram}{}
+\item{nonogram}{An object of class nonogram.}
 
-\item{with_solution}{}
+\item{with_solution}{\code{TRUE} (default) or \code{FALSE}.}
 }
 \value{
-
+A data.frame with 3 columns:
+\itemize{
+\item{\code{value}: } {If \code{with_solution} = \code{TRUE}, the solution for each position. All 0 otherwise.}
+\item{\code{column}: }{The column index where 1 = the leftmost column.}
+\item{\code{row}: }   {The row index where 1 = the top row.}
+}
 }
 \description{
 Extracts the solution of a solved nonogram into a tidy data.frame.
+Used primarily for tidying the data prior to plotting.
+}
+\details{
+If \code{with_solution} = \code{FALSE}, the function will return the data.frame
+with the appropriate column and row indices, but the \code{value} column will
+contain only 0s. This is only really useful when plotting a nonogram without
+its solution.
 }

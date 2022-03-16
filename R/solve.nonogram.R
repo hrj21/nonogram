@@ -13,7 +13,7 @@
 #' @examples
 solve.nonogram <- function(nonogram, row_permutations = NULL, column_permutations = NULL, verbose = TRUE, max_iter = 100) {
   if(is.null(row_permutations) | is.null(column_permutations)) {
-    cat(format(Sys.time(), usetz = TRUE), ": Generating initial possible permutations\n")
+    if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Generating initial possible permutations\n")
     if(nonogram$nrows == nonogram$ncolumns) {
       row_permutations <- column_permutations <- make_full_perm_set(nonogram$ncolumns)
     } else {
@@ -22,24 +22,9 @@ solve.nonogram <- function(nonogram, row_permutations = NULL, column_permutation
     }
   }
   
-  if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Run length encoding all initial possible permuations\n")
-  row_patterns <- apply(row_permutations, 1, function(x){
-    pat <- rle(x)$lengths[rle(x)$values==1]
-    if(length(pat) == 0) {
-      0
-    } else pat
-  })
-  
-  column_patterns <- apply(column_permutations, 1, function(x){
-    pat <- rle(x)$lengths[rle(x)$values==1]
-    if(length(pat) == 0) {
-      0
-    } else pat
-  })
-  
   if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Matching all possible solutions for each row and column\n")
-  row_solutions_original <- row_solutions <- lapply(nonogram$rows, permutation_solver, column_patterns, column_permutations)
-  column_solutions_original <- column_solutions <- lapply(nonogram$columns, permutation_solver, row_patterns, row_permutations)
+  row_solutions_original <- row_solutions <- lapply(nonogram$rows, permutation_solver, column_permutations)
+  column_solutions_original <- column_solutions <- lapply(nonogram$columns, permutation_solver, row_permutations)
 
   if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Creating empty lists of search vectors\n")
   rows_known <- rep(list(rep(NA, nonogram$ncolumns)), nonogram$nrows)
@@ -60,7 +45,6 @@ solve.nonogram <- function(nonogram, row_permutations = NULL, column_permutation
       stop("Maximum iterations reached.")
     }
     
-    ## columns
     eq0 <- lapply(column_solutions, function(x) { # all equal to 0?
       apply(x, 2, function(a) all(a == 0))
     }) 
@@ -79,12 +63,11 @@ solve.nonogram <- function(nonogram, row_permutations = NULL, column_permutation
       }
     }
     
-    ## rows
-    eq0 <- lapply(row_solutions, function(x) { # all equal to 0?
+    eq0 <- lapply(row_solutions, function(x) {
       apply(x, 2, function(a) all(a == 0))
     }) 
     
-    eq1 <- lapply(row_solutions, function(x) {  # all equal to 0?
+    eq1 <- lapply(row_solutions, function(x) {
       apply(x, 2, function(a) all(a == 1))
     })
     
@@ -98,7 +81,6 @@ solve.nonogram <- function(nonogram, row_permutations = NULL, column_permutation
       }
     }
     
-    # Update solutions --------------------------------------------------------
     column_solutions <- mapply(
       function(x, y) x[apply(x, 1, function(z) return(all(z == y, na.rm = TRUE))), , drop = FALSE],
       column_solutions, columns_known,
@@ -110,7 +92,6 @@ solve.nonogram <- function(nonogram, row_permutations = NULL, column_permutation
       SIMPLIFY = FALSE
     )
     
-    ## Replace empty elements with original permutations
     column_solutions <- lapply(1:nonogram$ncolumns, function(x){
       if(dim(column_solutions[[x]])[1] == 0) {
         column_solutions[[x]] <- column_solutions_original[[x]]
@@ -128,7 +109,6 @@ solve.nonogram <- function(nonogram, row_permutations = NULL, column_permutation
       cat("Columns: ", sapply(column_solutions, function(x) dim(x)[1]), "\n")
       cat("Rows:    ", sapply(row_solutions, function(x) dim(x)[1]), "\n")
     }
-    
   }
   
   output_nonogram <- nonogram

@@ -8,20 +8,35 @@ nonogram(rows, columns)
 }
 \arguments{
 \item{rows}{A list whose elements are numeric vectors indicating the pattern
-within each row (e.g. \code{c(2, 1)} indicates a row with a run of length 2
-followed by a run of length 1). The first element in the list corresponds
-to the top row of the nonogram.}
+within each row.}
 
 \item{columns}{A list whose elements are numeric vectors indicating the pattern
-within each column (e.g. \code{c(2, 1)} indicates a column with a run of length 2
-followed by a run of length 1). The first element in the list corresponds
-to the leftmost column of the nonogram.}
+within each column.}
 }
 \value{
-A nonogram object containing the found solution.
+An object of S3 class nonogram, with the following elements:
+\itemize{
+\item{\code{rows}: }          {The list of row patterns used to construct the nonogram.}
+\item{\code{columns}: }       {The list of column patterns used to construct the nonogram.}
+\item{\code{nrows}: }         {The number of rows.}
+\item{\code{ncolumns}: }      {The number of columns.}
+\item{\code{dims}: }          {A vector of length 2 indicating the number of rows an columns.}
+\item{\code{solved}: }        {Logical flag indicating whether the object contains a solution.}
+\item{\code{row_solution}: }  {List of row solutions.}
+\item{\code{column_solution}: }{List of column solutions.}
+}
 }
 \description{
-Constructor function to create an instance of the S3 class nonogram
+Constructor function to create an instance of the S3 class nonogram.
+}
+\details{
+Each element of the \code{rows} and \code{columns} arguments should be a numeric
+vector giving the pattern of runs for that row or column. For example,
+\code{c(2, 1)} indicates a row or column with a run of length 2 followed by a
+run of length 1, reading from left to right for a row and reading from top
+to bottom for a column. The first element of the list given to \code{rows} will
+correspond to the top row of the nonogram.The first element of the list
+given to \code{columns} will correspond to the leftmost column of the nonogram.
 }
 \examples{
 nonogram(

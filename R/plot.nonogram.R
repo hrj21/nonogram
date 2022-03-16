@@ -1,13 +1,20 @@
 #' plot.nonogram
 #'
-#' @description Method for plotting solved and unsolved nonograms.
-#' @param nonogram 
-#' @param with_solution 
+#' @description Method for plotting solved and unsolved nonograms using the ggplot2 and patchwork packages.
+#' @param nonogram An object of class nonogram.
+#' @param with_solution with_solution `TRUE` (default) or `FALSE`. Whether the plot should 
+#'     contain the nonogram solution.
 #'
-#' @return
+#' @return An object of classes `patchwork`, `gg`, and `ggplot`.
+#' 
+#' @details If `with_solution` = `FALSE`, the function will plot an empty nonogram   
+#'    with the row and column patterns indicated. If `with_solution` = `TRUE` and 
+#'    the nonogram does not have a solution, the function will throw an error.
+#'     
 #' @export
 #'
 #' @examples
+#' 
 plot.nonogram <- function(nonogram, with_solution = TRUE) {
   if(!nonogram$solved & with_solution) stop("This nonogram has not been solved.")
   

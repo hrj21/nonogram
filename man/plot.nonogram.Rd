@@ -7,9 +7,9 @@
 \method{plot}{nonogram}(nonogram, with_solution = TRUE)
 }
 \arguments{
-\item{nonogram}{}
+\item{nonogram}{An object of class nonogram.}
 
-\item{with_solution}{}
+\item{with_solution}{Logical flag,}
 }
 \value{
 

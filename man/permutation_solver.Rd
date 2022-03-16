@@ -4,7 +4,7 @@
 \alias{permutation_solver}
 \title{permutation_solver}
 \usage{
-permutation_solver(pattern, permutation_patterns, full_perms)
+permutation_solver(pattern, full_perms)
 }
 \arguments{
 \item{pattern}{}
@@ -15,5 +15,9 @@ permutation_solver(pattern, permutation_patterns, full_perms)
 
 }
 \description{
-I'm pretty sure this is important but I don't remember what it does or how it works...
+Given a row or column pattern, a set of candidate patterns,
+and the set of all possible permutations of the row/column's length,
+\code{permutation_solver} identifies the set of permutations that satisfy the
+pattern TODO: edit this so it takes just the true pattern and the permutations, and include the
+rle step inside it!
 }
