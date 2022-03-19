@@ -15,3 +15,7 @@ Vector of length 2.
 \description{
 Returns the dimensions of a nonogram object.
 }
+\examples{
+f <- examples[[31]]
+dim(f)
+}

@@ -7,6 +7,8 @@
 #' @export
 #'
 #' @examples
+#' f <- examples[[31]]
+#' dim(f)
 dim.nonogram <- function(nonogram) {
   nonogram$dims
 }

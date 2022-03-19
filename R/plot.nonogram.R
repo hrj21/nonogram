@@ -14,6 +14,9 @@
 #' @export
 #'
 #' @examples
+#' 'f <- examples[[33]] |> solve()
+#' plot(f)
+#' plot(f, with_solution = FALSE)
 #' 
 plot.nonogram <- function(nonogram, with_solution = TRUE) {
   if(!nonogram$solved & with_solution) stop("This nonogram has not been solved.")

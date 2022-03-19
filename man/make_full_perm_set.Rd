@@ -7,15 +7,15 @@
 make_full_perm_set(length)
 }
 \arguments{
-\item{length}{The length of each permutation}
+\item{length}{The length of each permutation.}
 }
 \value{
-Returns a matrix with l columns, where each row corresponds to a
-different permutation of 0s and 1s
+Returns a matrix with n columns, where each row corresponds to a
+different permutation of 0s and 1s.
 }
 \description{
-Given a length, l, \code{make_full_perm_set} finds all permutations of
-length l whose elements can be 0 and 1.
+Given a length n, \code{make_full_perm_set} finds all permutations of
+length n whose elements can be 0 or 1.
 }
 \examples{
 # All possible permutations of length 3

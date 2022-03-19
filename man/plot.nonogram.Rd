@@ -9,11 +9,17 @@
 \arguments{
 \item{nonogram}{An object of class nonogram.}
 
-\item{with_solution}{Logical flag,}
+\item{with_solution}{with_solution \code{TRUE} (default) or \code{FALSE}. Whether the plot should
+contain the nonogram solution.}
 }
 \value{
-
+An object of classes \code{patchwork}, \code{gg}, and \code{ggplot}.
 }
 \description{
-Method for plotting solved and unsolved nonograms.
+Method for plotting solved and unsolved nonograms using the ggplot2 and patchwork packages.
+}
+\details{
+If \code{with_solution} = \code{FALSE}, the function will plot an empty nonogram
+with the row and column patterns indicated. If \code{with_solution} = \code{TRUE} and
+the nonogram does not have a solution, the function will throw an error.
 }

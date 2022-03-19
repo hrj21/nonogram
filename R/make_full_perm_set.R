@@ -1,7 +1,7 @@
 #' make_full_perm_set
 #'
 #' @description Given a length n, `make_full_perm_set` finds all permutations of
-#'     length n whose elements can be 0 and 1.
+#'     length n whose elements can be 0 or 1.
 #'     
 #' @param length The length of each permutation.
 #'

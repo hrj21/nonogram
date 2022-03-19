@@ -9,7 +9,8 @@
 \arguments{
 \item{nonogram}{An object of class nonogram.}
 
-\item{with_solution}{\code{TRUE} (default) or \code{FALSE}.}
+\item{with_solution}{\code{TRUE} (default) or \code{FALSE}. Whether the data.frame should
+contain the nonogram solution.}
 }
 \value{
 A data.frame with 3 columns:
@@ -24,8 +25,14 @@ Extracts the solution of a solved nonogram into a tidy data.frame.
 Used primarily for tidying the data prior to plotting.
 }
 \details{
-If \code{with_solution} = \code{FALSE}, the function will return the data.frame
+If \code{with_solution} = \code{FALSE}, the function will return a data.frame
 with the appropriate column and row indices, but the \code{value} column will
 contain only 0s. This is only really useful when plotting a nonogram without
-its solution.
+its solution. If \code{with_solution} = \code{TRUE} and the nonogram does not have a
+solution, the function will throw an error.
+}
+\examples{
+f <- examples[[1]] |> solve(verbose = FALSE)
+as.data.frame(f)
+as.data.frame(f, with_solution = FALSE)
 }
