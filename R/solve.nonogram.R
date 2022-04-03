@@ -71,157 +71,190 @@
 solve.nonogram <- function(nonogram, algorithm = "perm_elim", row_permutations = NULL, 
                            column_permutations = NULL, row_patterns = NULL, column_patterns = NULL,
                            verbose = TRUE, max_iter = 100, parallel = TRUE) {
-  
-  handlers("progress")
-  
-  if(parallel) plan(multisession) else plan(sequential)
-  handlers(global = verbose)
-  
-  if(is.null(row_permutations)) {
-    if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Generating initial possible row permutations\n")
-    row_permutations <- make_full_perm_set(nonogram$nrows)
-  } 
-  if(is.null(column_permutations)){
-    if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Generating initial possible column permutations\n")
-    column_permutations <- make_full_perm_set(nonogram$ncolumns)
-  } 
-  if(is.null(row_patterns)) {
-    if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Generating initial possible row patterns\n")
-    row_patterns <- future_apply(row_permutations, 1, function(x){
-      pat <- rle(x)$lengths[rle(x)$values==1]
-      if(length(pat) == 0) {
-        0
-      } else pat
-    })
-  }
-  if(is.null(column_patterns)) {
-    if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Generating initial possible column patterns\n")
-    column_patterns <- future_apply(column_permutations, 1, function(x){
-      pat <- rle(x)$lengths[rle(x)$values==1]
-      if(length(pat) == 0) {
-        0
-      } else pat
-    })
-  }
-  
-  if(ncol(row_permutations) != nonogram$nrows) {
-    stop("The row_permutations argument has the incorrect number of columns for the nonogram.")
-  } 
-  if(ncol(column_permutations) != nonogram$ncolumns) {
-    stop("The column_permutations argument has the incorrect number of columns for the nonogram.")
-  }
-  
-  if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Matching all possible starting solutions for each row\n")
-  
-  perm_solve_with_progress <- function(pattern) {
-    p <- progressor(along = pattern)
-    y <- future_lapply(pattern, function(pattern, ...) {
-      p()
-      permutation_solver(
-        pattern,
-        permutation_patterns = column_permutations, 
-        full_patterns = column_patterns,
-        verbose = verbose
+  if(algorithm == "perm_elim") {
+    handlers("progress")
+    
+    if(parallel) plan(multisession) else plan(sequential)
+    handlers(global = verbose)
+    
+    if(is.null(row_permutations)) {
+      if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Generating initial possible row permutations\n")
+      row_permutations <- make_full_perm_set(nonogram$nrows)
+    } 
+    if(is.null(column_permutations)){
+      if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Generating initial possible column permutations\n")
+      column_permutations <- make_full_perm_set(nonogram$ncolumns)
+    } 
+    if(is.null(row_patterns)) {
+      if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Generating initial possible row patterns\n")
+      row_patterns <- future_apply(row_permutations, 1, function(x){
+        pat <- rle(x)$lengths[rle(x)$values==1]
+        if(length(pat) == 0) {
+          0
+        } else pat
+      })
+    }
+    if(is.null(column_patterns)) {
+      if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Generating initial possible column patterns\n")
+      column_patterns <- future_apply(column_permutations, 1, function(x){
+        pat <- rle(x)$lengths[rle(x)$values==1]
+        if(length(pat) == 0) {
+          0
+        } else pat
+      })
+    }
+    
+    if(ncol(row_permutations) != nonogram$nrows) {
+      stop("The row_permutations argument has the incorrect number of columns for the nonogram.")
+    } 
+    if(ncol(column_permutations) != nonogram$ncolumns) {
+      stop("The column_permutations argument has the incorrect number of columns for the nonogram.")
+    }
+    
+    if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Matching all possible starting solutions for each row\n")
+    
+    perm_solve_with_progress <- function(pattern) {
+      p <- progressor(along = pattern)
+      y <- future_lapply(pattern, function(pattern, ...) {
+        p()
+        permutation_solver(
+          pattern,
+          permutation_patterns = column_permutations, 
+          full_patterns = column_patterns,
+          verbose = verbose
+        )
+      })
+    }
+    
+    row_solutions_original <- row_solutions <- 
+      perm_solve_with_progress(nonogram$rows)
+    
+    if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Matching all possible starting solutions for each column\n")
+    
+    column_solutions_original <- column_solutions <-
+      perm_solve_with_progress(nonogram$columns)
+    
+    if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Creating empty lists of search vectors\n")
+    rows_known <- rep(list(rep(NA, nonogram$ncolumns)), nonogram$nrows)
+    columns_known <- rep(list(rep(NA, nonogram$nrows)), nonogram$ncolumns)
+    
+    if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Eliminating non-viable permutations\n")
+    
+    iter <- 0
+    
+    while(
+      !(all(sapply(row_solutions, function(x) dim(x)[1]) == 1) &
+        all(sapply(column_solutions, function(x) dim(x)[1]) == 1))
+    ) {
+      
+      iter <- iter + 1
+      
+      if(iter > max_iter) {                        
+        stop("Maximum iterations reached.")
+      }
+      
+      eq0 <- lapply(column_solutions, function(x) { # all equal to 0?
+        apply(x, 2, function(a) all(a == 0))
+      }) 
+      
+      eq1 <- lapply(column_solutions, function(x) {  # all equal to 1?
+        apply(x, 2, function(a) all(a == 1))
+      })
+      
+      for(j in 1:nonogram$ncolumns) {            
+        for(i in 1:nonogram$nrows) {
+          if(eq0[[j]][i]) {
+            rows_known[[i]][j] <- 0
+          } else if(eq1[[j]][i]) {
+            rows_known[[i]][j] <- 1
+          }
+        }
+      }
+      
+      eq0 <- lapply(row_solutions, function(x) {
+        apply(x, 2, function(a) all(a == 0))
+      }) 
+      
+      eq1 <- lapply(row_solutions, function(x) {
+        apply(x, 2, function(a) all(a == 1))
+      })
+      
+      for(j in 1:nonogram$ncolumns) {
+        for(i in 1:nonogram$nrows) {
+          if(eq0[[j]][i]) {
+            columns_known[[i]][j] <- 0
+          } else if(eq1[[j]][i]) {
+            columns_known[[i]][j] <- 1
+          }
+        }
+      }
+      
+      column_solutions <- mapply(
+        function(x, y) x[apply(x, 1, function(z) return(all(z == y, na.rm = TRUE))), , drop = FALSE],
+        column_solutions, columns_known,
+        SIMPLIFY = FALSE)
+      
+      row_solutions <- mapply(
+        function(x, y) x[apply(x, 1, function(z) return(all(z == y, na.rm = TRUE))), , drop = FALSE],
+        row_solutions, rows_known,
+        SIMPLIFY = FALSE
       )
-    })
+      
+      column_solutions <- lapply(1:nonogram$ncolumns, function(x){
+        if(dim(column_solutions[[x]])[1] == 0) {
+          column_solutions[[x]] <- column_solutions_original[[x]]
+        } else column_solutions[[x]] <- column_solutions[[x]]
+      })
+      
+      row_solutions <- lapply(1:nonogram$nrows, function(x){
+        if(dim(row_solutions[[x]])[1] == 0) {
+          row_solutions[[x]] <- row_solutions_original[[x]]
+        } else row_solutions[[x]] <- row_solutions[[x]]
+      })
+      
+      if(verbose) {
+        if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Iter", iter, ":\n")
+        cat("Columns: ", sapply(column_solutions, function(x) dim(x)[1]), "\n")
+        cat("Rows:    ", sapply(row_solutions, function(x) dim(x)[1]), "\n")
+      }
+    }
   }
-  
-  row_solutions_original <- row_solutions <- 
-    perm_solve_with_progress(nonogram$rows)
-  
-  if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Matching all possible starting solutions for each column\n")
-  
-  column_solutions_original <- column_solutions <-
-    perm_solve_with_progress(nonogram$columns)
-  
-  if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Creating empty lists of search vectors\n")
-  rows_known <- rep(list(rep(NA, nonogram$ncolumns)), nonogram$nrows)
-  columns_known <- rep(list(rep(NA, nonogram$nrows)), nonogram$ncolumns)
-  
-  if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Eliminating non-viable permutations\n")
-  
-  iter <- 0
-  
-  while(
-    !(all(sapply(row_solutions, function(x) dim(x)[1]) == 1) &
-      all(sapply(column_solutions, function(x) dim(x)[1]) == 1))
-  ) {
+  if(algorithm == "force") {
     
-    iter <- iter + 1
+    n <- sum(unlist(nonogram$rows))
+    size <- prod(dim(nonogram))
+    prob <- n / size
     
-    if(iter > max_iter) {                        
-      stop("Maximum iterations reached.")
-    }
+    proposal_mat <- matrix(rbinom(size, 1, prob), ncol = dim(nonogram)[2])
+    row_solutions <- apply(proposal_mat, 1, function(x) rle(x)$lengths[rle(x)$values==1])
+    column_solutions <- apply(proposal_mat, 2, function(x) rle(x)$lengths[rle(x)$values==1])
+    row_rle <- apply(proposal_mat, 1, function(x) rle(x)$lengths[rle(x)$values==1])
+    column_rle <- apply(proposal_mat, 2, function(x) rle(x)$lengths[rle(x)$values==1])
     
-    eq0 <- lapply(column_solutions, function(x) { # all equal to 0?
-      apply(x, 2, function(a) all(a == 0))
-    }) 
+    iter <- 0
     
-    eq1 <- lapply(column_solutions, function(x) {  # all equal to 1?
-      apply(x, 2, function(a) all(a == 1))
-    })
-    
-    for(j in 1:nonogram$ncolumns) {            
-      for(i in 1:nonogram$nrows) {
-        if(eq0[[j]][i]) {
-          rows_known[[i]][j] <- 0
-        } else if(eq1[[j]][i]) {
-          rows_known[[i]][j] <- 1
-        }
+    while(!(all(unlist(nonogram$rows) == unlist(row_rle)) & 
+            all(unlist(nonogram$columns) == unlist(column_rle)))) {
+      
+      iter <- iter + 1
+      
+      if(iter > max_iter) {                        
+        stop("Maximum iterations reached.")
       }
-    }
-    
-    eq0 <- lapply(row_solutions, function(x) {
-      apply(x, 2, function(a) all(a == 0))
-    }) 
-    
-    eq1 <- lapply(row_solutions, function(x) {
-      apply(x, 2, function(a) all(a == 1))
-    })
-    
-    for(j in 1:nonogram$ncolumns) {
-      for(i in 1:nonogram$nrows) {
-        if(eq0[[j]][i]) {
-          columns_known[[i]][j] <- 0
-        } else if(eq1[[j]][i]) {
-          columns_known[[i]][j] <- 1
-        }
-      }
-    }
-    
-    column_solutions <- mapply(
-      function(x, y) x[apply(x, 1, function(z) return(all(z == y, na.rm = TRUE))), , drop = FALSE],
-      column_solutions, columns_known,
-      SIMPLIFY = FALSE)
-    
-    row_solutions <- mapply(
-      function(x, y) x[apply(x, 1, function(z) return(all(z == y, na.rm = TRUE))), , drop = FALSE],
-      row_solutions, rows_known,
-      SIMPLIFY = FALSE
-    )
-    
-    column_solutions <- lapply(1:nonogram$ncolumns, function(x){
-      if(dim(column_solutions[[x]])[1] == 0) {
-        column_solutions[[x]] <- column_solutions_original[[x]]
-      } else column_solutions[[x]] <- column_solutions[[x]]
-    })
-    
-    row_solutions <- lapply(1:nonogram$nrows, function(x){
-      if(dim(row_solutions[[x]])[1] == 0) {
-        row_solutions[[x]] <- row_solutions_original[[x]]
-      } else row_solutions[[x]] <- row_solutions[[x]]
-    })
-    
-    if(verbose) {
-      if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Iter", iter, ":\n")
-      cat("Columns: ", sapply(column_solutions, function(x) dim(x)[1]), "\n")
-      cat("Rows:    ", sapply(row_solutions, function(x) dim(x)[1]), "\n")
+      
+      if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Iteration ", iter, "\n")
+      
+      proposal_mat <- matrix(rbinom(size, 1, prob), ncol = dim(nonogram)[2])
+      row_solutions <- apply(proposal_mat, 1, matrix, nrow = 1, simplify = FALSE)
+      column_solutions <- apply(proposal_mat, 2, matrix, nrow = 1, simplify = FALSE)
+      row_rle <- apply(proposal_mat, 1, function(x) rle(x)$lengths[rle(x)$values==1])
+      column_rle <- apply(proposal_mat, 2, function(x) rle(x)$lengths[rle(x)$values==1])
     }
   }
   
-  output_nonogram <- nonogram
-  output_nonogram$row_solution <- row_solutions
-  output_nonogram$column_solution <- column_solutions
-  output_nonogram$solved <- TRUE
-  output_nonogram
+  nonogram$row_solution <- row_solutions
+  nonogram$column_solution <- column_solutions
+  nonogram$solved <- TRUE
+  nonogram
+  
 }

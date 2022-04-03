@@ -12,7 +12,8 @@
   row_patterns = NULL,
   column_patterns = NULL,
   verbose = TRUE,
-  max_iter = 100
+  max_iter = 100,
+  parallel = TRUE
 )
 }
 \arguments{

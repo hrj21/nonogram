@@ -16,5 +16,6 @@ Depends:
     patchwork,
     gtools,
     gridExtra,
-    future.apply
+    future.apply,
+    progressr
 LazyData: true
