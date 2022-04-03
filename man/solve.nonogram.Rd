@@ -9,6 +9,8 @@
   algorithm = "perm_elim",
   row_permutations = NULL,
   column_permutations = NULL,
+  row_patterns = NULL,
+  column_patterns = NULL,
   verbose = TRUE,
   max_iter = 100
 )

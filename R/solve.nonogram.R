@@ -68,7 +68,15 @@
 #' full_perms <- make_full_perm_set(15)
 #' f <- solve(f, row_permutations = full_perms, column_permutations = full_perms)
 #' 
-solve.nonogram <- function(nonogram, algorithm = "perm_elim", row_permutations = NULL, column_permutations = NULL, verbose = TRUE, max_iter = 100) {
+solve.nonogram <- function(nonogram, algorithm = "perm_elim", row_permutations = NULL, 
+                           column_permutations = NULL, row_patterns = NULL, column_patterns = NULL,
+                           verbose = TRUE, max_iter = 100, parallel = TRUE) {
+  
+  handlers("progress")
+  
+  if(parallel) plan(multisession) else plan(sequential)
+  handlers(global = verbose)
+  
   if(is.null(row_permutations)) {
     if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Generating initial possible row permutations\n")
     row_permutations <- make_full_perm_set(nonogram$nrows)
@@ -77,6 +85,25 @@ solve.nonogram <- function(nonogram, algorithm = "perm_elim", row_permutations =
     if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Generating initial possible column permutations\n")
     column_permutations <- make_full_perm_set(nonogram$ncolumns)
   } 
+  if(is.null(row_patterns)) {
+    if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Generating initial possible row patterns\n")
+    row_patterns <- future_apply(row_permutations, 1, function(x){
+      pat <- rle(x)$lengths[rle(x)$values==1]
+      if(length(pat) == 0) {
+        0
+      } else pat
+    })
+  }
+  if(is.null(column_patterns)) {
+    if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Generating initial possible column patterns\n")
+    column_patterns <- future_apply(column_permutations, 1, function(x){
+      pat <- rle(x)$lengths[rle(x)$values==1]
+      if(length(pat) == 0) {
+        0
+      } else pat
+    })
+  }
+  
   if(ncol(row_permutations) != nonogram$nrows) {
     stop("The row_permutations argument has the incorrect number of columns for the nonogram.")
   } 
@@ -84,15 +111,28 @@ solve.nonogram <- function(nonogram, algorithm = "perm_elim", row_permutations =
     stop("The column_permutations argument has the incorrect number of columns for the nonogram.")
   }
   
-  if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Matching all possible solutions for each row and column\n")
+  if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Matching all possible starting solutions for each row\n")
   
-  row_solutions_original <- 
-    row_solutions <- 
-    lapply(nonogram$rows, permutation_solver, permutation_patterns = row_permutations)
+  perm_solve_with_progress <- function(pattern) {
+    p <- progressor(along = pattern)
+    y <- future_lapply(pattern, function(pattern, ...) {
+      p()
+      permutation_solver(
+        pattern,
+        permutation_patterns = column_permutations, 
+        full_patterns = column_patterns,
+        verbose = verbose
+      )
+    })
+  }
   
-  column_solutions_original <- 
-    column_solutions <- 
-    lapply(nonogram$columns, permutation_solver, permutation_patterns = column_permutations)
+  row_solutions_original <- row_solutions <- 
+    perm_solve_with_progress(nonogram$rows)
+  
+  if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Matching all possible starting solutions for each column\n")
+  
+  column_solutions_original <- column_solutions <-
+    perm_solve_with_progress(nonogram$columns)
   
   if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Creating empty lists of search vectors\n")
   rows_known <- rep(list(rep(NA, nonogram$ncolumns)), nonogram$nrows)

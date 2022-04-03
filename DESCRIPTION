@@ -15,5 +15,6 @@ Depends:
     ggplot2,
     patchwork,
     gtools,
-    gridExtra
+    gridExtra,
+    future.apply
 LazyData: true
