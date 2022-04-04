@@ -19,3 +19,4 @@ Depends:
     future.apply,
     progressr
 LazyData: true
+ByteCompile: true
