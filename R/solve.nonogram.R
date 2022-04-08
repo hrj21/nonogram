@@ -281,6 +281,7 @@ solve.nonogram <- function(nonogram, algorithm = "perm_elim", row_permutations =
     
     iter <- 0
     
+    suppressWarnings({
     while(!(all(unlist(nonogram$rows) == unlist(row_rle)) & 
             all(unlist(nonogram$columns) == unlist(column_rle)))) {
       
@@ -290,7 +291,7 @@ solve.nonogram <- function(nonogram, algorithm = "perm_elim", row_permutations =
         stop("Maximum iterations reached.")
       }
       
-      if(verbose) cat(format(Sys.time(), usetz = TRUE), ": Iteration ", iter, "\n")
+      if(verbose & iter %% 100 == 0) cat(format(Sys.time(), usetz = TRUE), ": Iteration ", iter, "\n")
       
       proposal_mat <- matrix(rbinom(size, 1, prob), ncol = dim(nonogram)[2])
       row_solutions <- apply(proposal_mat, 1, matrix, nrow = 1, simplify = FALSE)
@@ -298,11 +299,11 @@ solve.nonogram <- function(nonogram, algorithm = "perm_elim", row_permutations =
       row_rle <- apply(proposal_mat, 1, function(x) rle(x)$lengths[rle(x)$values==1])
       column_rle <- apply(proposal_mat, 2, function(x) rle(x)$lengths[rle(x)$values==1])
     }
+    })
   }
   
   nonogram$row_solution <- row_solutions
   nonogram$column_solution <- column_solutions
   nonogram$solved <- TRUE
   nonogram
-  
 }
