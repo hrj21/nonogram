@@ -77,29 +77,29 @@ intractable with even moderately-sized nonograms.
 The other algorithm is the permutation elimination algorithm, which
 proceeds as follows:
 
-    \enumerate{
-        \item{For a nonogram with m rows and n columns, if m = n then generate 
-            a single matrix with n columns whose rows represent every possible 
-            permutation of 0s and 1s for a vector of length n. If m != n then 
-            generate two matrices, one containing all possible row permutations
-            and one containing all possible column permutations.}
-        \item{Convert each permutation from the full permutation matrix/matrices
-            into its run length-encoded form. E.g. 000110111101 would become
-            241 in run length encoding.}
-        \item{For each row and column of the nonogram, find every permutation in
-            the full permutation matrix appropriate for that dimension, whose rows 
-            have the same run length encoding as the nonogram's row/column in question.
-            Set these permutations as the initial solution set for that row/column.
-            Repeat this process until every row and column has an initial solution set.}
-        \item{For each row and column of the nonogram, identify any elements across
-            the solution set that are all 0 or all 1 for all possible permutations.
-            E.g. if all permutations for column j have a 0 at element k, then eliminate 
-            any solutions in row k that don't have a 0 at element j. Perform this 
-            action for every row and column. A single iteration has passed once
-            this has been applied to every row and column once.}
-        \item{Repeat step 4 until only a single solution remains for every row and
-            column. Return the nonogram with the solution.}
-    }
+1.  For a nonogram with m rows and n columns, if m = n then generate a
+    single matrix with n columns whose rows represent every possible
+    permutation of 0s and 1s for a vector of length n. If m != n then
+    generate two matrices, one containing all possible row permutations
+    and one containing all possible column permutations.
+2.  Convert each permutation from the full permutation matrix/matrices
+    into its run length-encoded form. E.g. 000110111101 would become 241
+    in run length encoding.
+3.  For each row and column of the nonogram, find every permutation in
+    the full permutation matrix appropriate for that dimension, whose
+    rows have the same run length encoding as the nonogram’s row/column
+    in question. Set these permutations as the initial solution set for
+    that row/column. Repeat this process until every row and column has
+    an initial solution set.
+4.  For each row and column of the nonogram, identify any elements
+    across the solution set that are all 0 or all 1 for all possible
+    permutations. E.g. if all permutations for column j have a 0 at
+    element k, then eliminate any solutions in row k that don’t have a 0
+    at element j. Perform this action for every row and column. A single
+    iteration has passed once this has been applied to every row and
+    column once.
+5.  Repeat step 4 until only a single solution remains for every row and
+    column. Return the nonogram with the solution.
 
 Unless you have a specific nonogram you wish to solve or create,
 defining nonograms by hand can become a little tedious. Thankfully, the
