@@ -42,7 +42,7 @@ non_3x3
 
 There are currently two algorithms implemented for solving nonograms: a
 brute force algorithm, and a permutation elimination algorithm. The
-brute force algorithm calculates the porportion of filled squares in the
+brute force algorithm calculates the proportion of filled squares in the
 nonogram, and keeps proposing random matrices of 0s and 1s until the row
 and column patterns of a proposal match those of the nonogram in
 question.
